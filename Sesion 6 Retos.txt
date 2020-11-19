@@ -1,0 +1,68 @@
+Reto 1
+* Con base en el ejemplo 1, modifica el agrupamiento para que muestre el costo promedio por habitación por país de las propiedades de tipo casa.
+client = MongoClient('mongodb+srv://introabd:introabd1234@cluster0.st3u8.mongodb.net/test?authSource=admin&replicaSet=atlas-10a0so-shard-0&connectTimeoutMS=600000&socketTimeoutMS=6000000&readPreference=primary&appname=MongoDB%20Compass&ssl=true')
+result = client['sample_airbnb']['listingsAndReviews'].aggregate([
+    {
+        '$match': {
+            'property_type': 'House', 
+            'bedrooms': {
+                '$gte': 1
+            }
+        }
+    }, {
+        '$group': {
+            '_id': '$address.country', 
+            'total_bedrooms': {
+                '$sum': '$bedrooms'
+            }, 
+            'total_cost': {
+                '$sum': '$price'
+            }
+        }
+    }, {
+        '$addFields': {
+            'avg_bedroom_cost': {
+                '$divide': [
+                    '$total_cost', '$total_bedrooms'
+                ]
+            }
+        }
+    }
+])
+
+Reto 2
+* Usando las colecciones comments y users, se requiere conocer el correo y contraseña de cada persona que realizó un comentario. Construye un pipeline que genere como resultado estos datos.
+client = MongoClient('mongodb+srv://introabd:introabd1234@cluster0.st3u8.mongodb.net/test?authSource=admin&replicaSet=atlas-10a0so-shard-0&connectTimeoutMS=600000&socketTimeoutMS=6000000&readPreference=primary&appname=MongoDB%20Compass&ssl=true')
+result = client['sample_mflix']['users'].aggregate([
+    {
+        '$lookup': {
+            'from': 'comments', 
+            'localField': 'name', 
+            'foreignField': 'name', 
+            'as': 'comment'
+        }
+    }, {
+        '$match': {
+            'comment': {
+                '$not': {
+                    '$size': 0
+                }
+            }
+        }
+    }, {
+        '$project': {
+            '_id': 0, 
+            'name': 1, 
+            'email': 1, 
+            'password': 1
+        }
+    }
+])
+
+Reto 3
+* Usando el pipeline que generaste en el Reto 2, genera la vista correspondiente.
+client = MongoClient('mongodb+srv://introabd:introabd1234@cluster0.st3u8.mongodb.net/test?authSource=admin&replicaSet=atlas-10a0so-shard-0&connectTimeoutMS=600000&socketTimeoutMS=6000000&readPreference=primary&appname=MongoDB%20Compass&ssl=true')
+filter={}
+result = client['sample_mflix']['Users_commented'].find(
+  filter=filter
+)
